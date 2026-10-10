@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>تحلیل بازار آپارتمان بجنورد</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand"><span class="logo">B</span><div><b>Bojnurd Property</b><small>Live Market Analytics</small></div></div>
+    <nav>
+      <button class="nav active" data-tab="overview">نمای کلی</button>
+      <button class="nav" data-tab="districts">محله‌ها</button>
+      <button class="nav" data-tab="listings">آگهی‌ها</button>
+      <button class="nav" data-tab="history">تاریخچه</button>
+    </nav>
+    <div class="source-box"><span class="live-dot"></span><div><span>منبع داده</span><b id="sourceLabel">دیوار — داده زنده</b><small>Local / بدون داده ساختگی</small></div></div>
+  </aside>
+
+  <main>
+    <header>
+      <div><p class="eyebrow">بازار مسکن بجنورد</p><h1>آپارتمان‌های فروشی</h1><p class="muted" id="lastUpdate">هنوز داده‌ای دریافت نشده</p></div>
+      <div class="header-actions">
+        <a class="ghost" href="/api/export.csv">CSV خروجی</a>
+        <button id="updateBtn" class="primary"><span class="spin">↻</span><span id="updateText">به‌روزرسانی از دیوار</span></button>
+      </div>
+    </header>
+
+    <div id="progressBox" class="progress-box hidden">
+      <div class="progress-meta"><b id="progressStage">در حال بروزرسانی</b><span id="progressPercent">۰٪</span></div>
+      <div class="progress-track"><i id="progressBar"></i></div>
+      <p id="progressMessage">در حال اتصال به دیوار…</p>
+    </div>
+
+    <div id="emptyState" class="empty-state hidden">
+      <div class="empty-icon">⌂</div>
+      <h2>هنوز بازار بجنورد اسکن نشده</h2>
+      <p>روی «به‌روزرسانی از دیوار» بزن. اولین اجرا مشخصات فایل‌های فعال را می‌گیرد و دیتابیس واقعی می‌سازد.</p>
+      <button class="primary" id="emptyUpdateBtn">شروع اولین بروزرسانی</button>
+    </div>
+
+    <div id="appContent">
+      <section id="overview" class="tabpage active">
+        <div class="hero-grid">
+          <article class="kpi"><span>میانه قیمت هر متر</span><strong id="medianPpm">—</strong><small>تومان / متر</small></article>
+          <article class="kpi accent"><span>میانه نوساز</span><strong id="newMedianPpm">—</strong><small id="newBuildLabel">ساخت ۰ تا ۳ سال</small></article>
+          <article class="kpi"><span>فایل معتبر</span><strong id="validCount">—</strong><small id="qualityHint">بدون تکراری و قیمت پرت</small></article>
+          <article class="kpi"><span>محله فعال</span><strong id="districtCount">—</strong><small>دارای داده قابل تحلیل</small></article>
+        </div>
+
+        <div class="health-strip">
+          <div><span>کل آگهی فعال</span><b id="activeCount">—</b></div>
+          <div><span>مشخصات کامل</span><b id="detailCount">—</b></div>
+          <div><span>تکراری حذف‌شده</span><b id="dupeCount">—</b></div>
+          <div><span>قیمت پرت</span><b id="outlierCount">—</b></div>
+        </div>
+
+        <div class="panel-grid">
+          <article class="panel wide"><div class="panel-head"><div><h2>نمای سریع محله‌ها</h2><p>میانه و بازه معمول قیمت هر متر؛ مرتب‌شده از گران به ارزان</p></div><span class="pill">IQR 25–75%</span></div><div id="districtPreview" class="district-preview"></div></article>
+          <article class="panel"><div class="panel-head"><div><h2>روند بازار</h2><p>تغییر میانه قیمت ثبت‌شده</p></div></div><canvas id="miniChart" width="700" height="300"></canvas><div id="chartEmpty" class="empty hidden">برای روند، در روزهای مختلف Update بزن.</div></article>
+        </div>
+      </section>
+
+      <section id="districts" class="tabpage">
+        <div class="section-title"><div><h2>تحلیل محله‌های بزرگ</h2><p>محله‌های جهت‌دار مثل «فردوسی جنوبی/شمالی» به گروه اصلی خودشان وصل می‌شوند.</p></div><input id="districtSearch" placeholder="جستجوی محله…" /></div>
+        <div id="districtCards" class="district-cards"></div>
+      </section>
+
+      <section id="listings" class="tabpage">
+        <div class="filters">
+          <input id="listingSearch" placeholder="جستجو در عنوان آگهی…" />
+          <select id="districtFilter"><option value="">همه محله‌ها</option></select>
+          <select id="ageFilter"><option value="">همه سن بناها</option><option value="new">فقط نوساز ۰–۳ سال</option><option value="0">نوساز</option><option value="1">۱ سال</option><option value="2">۲ سال</option><option value="3">۳ سال</option></select>
+          <select id="sizeFilter"><option value="">همه متراژها</option><option value="lt70">زیر ۷۰</option><option value="70-100">۷۰ تا ۱۰۰</option><option value="100-130">۱۰۰ تا ۱۳۰</option><option value="130-160">۱۳۰ تا ۱۶۰</option><option value="gt160">بیشتر از ۱۶۰</option></select>
+          <select id="qualityFilter"><option value="valid">فقط معتبر</option><option value="opportunity">زیر قیمت محله</option><option value="all">همه آگهی‌ها</option><option value="outlier">قیمت‌های پرت</option><option value="duplicate">تکراری‌ها</option></select>
+        </div>
+        <div class="table-note"><span id="listingCount">—</span><span>عدد «٪ بازار» نسبت قیمت متری فایل به میانه همان محله است.</span></div>
+        <div class="table-wrap"><table><thead><tr><th>محله</th><th>عنوان</th><th>متراژ</th><th>ساخت</th><th>قیمت کل</th><th>قیمت / متر</th><th>٪ بازار</th><th>وضعیت</th><th></th></tr></thead><tbody id="listingRows"></tbody></table></div>
+      </section>
+
+      <section id="history" class="tabpage">
+        <article class="panel full"><div class="panel-head"><div><h2>تاریخچه قیمت محله‌ها</h2><p>هر بروزرسانی یک Snapshot از بازار همان لحظه ذخیره می‌کند.</p></div></div><canvas id="historyChart" width="1100" height="430"></canvas><div id="historyEmpty" class="empty hidden">هنوز تاریخچه کافی نداریم.</div></article>
+      </section>
+    </div>
+  </main>
+</div>
+<div id="toast" class="toast"></div>
+<script src="/static/app.js"></script>
+</body>
+</html>
